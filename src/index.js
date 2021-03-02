@@ -34,13 +34,24 @@ fetch(`http://localhost:3000/ramens`)
 
 
 
+
+
 ramenMenu.addEventListener('click', function(event) {
     if (event.target.className === 'detail-image') {
+        function renderRamenDiv(){
     const ramenDiv = createElement('div')
-    div.dataset.id
+    div.dataset.id = ramen.id
     div.innerHTML = 
     `<img class="detail-image" src=${ramen.image} alt="Insert Name Here">
     <h2 class="name">${ramen.name}</h2>
-    <h3 class="restaurant">${ramen.restaurant}</h3>`
+    <h3 class="restaurant">${ramen.restaurant}</h3>
+    <h3 class="rating">${ramen.rating}</h3>
+    <h3 class="comment">${ramen.comment}</h3>`
+    
+    }
     }
 })
+
+fetch(`http://localhost:3000/ramens/id`)
+    .then(response => response.json())
+    .then(ramens => renderRamenDiv(ramens))
