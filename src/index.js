@@ -1,57 +1,83 @@
 // write your code here
-const ramenMenu = document.querySelector("div#ramen-menu")
-const ramenImg = document.querySelector('.detail-image')
-//<h2 class="name">${ramen.name}</h2>
-//<h3 class="restaurant">${ramen.restaurant}</h3>
-
-// See all ramen images in the `div` with the id of `ramen-menu`. 
-// When the page loads, request the data from the server to get all the ramen objects. 
-// Then, display the image for each of the ramen using an an `img` tag inside the `#ramen-menu` div.
+const ramenMenu = document.querySelector('div#ramen-menu')
+const ratingForm = document.querySelector('form#ramen-rating')
 
 
-function renderRamen(ramen) {
-    const div = document.createElement('div')
-    div.innerHTML = `<img class="detail-image" src=${ramen.image} alt="Insert Name Here" />`
+function renderRamenMenu() {
 
-    ramenMenu.append(div)
+    fetch('http://localhost:3000/ramens')
+        .then(res => res.json())
+        .then(ramenArray => {
+            ramenArray.forEach(ramen => {
+                const imgTag = document.createElement('img')
+                imgTag.src = ramen.image
+                imgTag.dataset.id = ramen.id
+                // data-id="1"
+
+                ramenMenu.append(imgTag)
+                // appendChild -> only takes in 1 argument
+                // append -> 1 or many arguments
+            });
+        })
 }
 
-function renderRamens(ramens) {
-    ramens.forEach( function (ramen) {
-        renderRamen(ramen)
-    })
-
-}
-
-fetch(`http://localhost:3000/ramens`)
-    .then(response => response.json())
-    .then(ramens => renderRamens(ramens))
-
-// Click on an image from the #ramen-menu div and 
-// see all the info about that ramen displayed inside the #ramen-detail div, 
-// as well as the current rating and 
-// comment for the ramen displayed in the #ramen-rating form.
 
 
+ramenMenu.addEventListener('click', event => {
+    if (event.target.tagName === 'IMG') {
+        // console.log('click - ', event.target.dataset.id) // event.target tells which element fired off the event
 
+        fetch(`http://localhost:3000/ramens/${event.target.dataset.id}`)
+            .then(res => res.json())
+            .then(ramenObject => {
+                console.log(ramenObject)
+                // detail div
+                const detailImg = document.querySelector('.detail-image')
+                const detailH2 = document.querySelector('.name')
+                const detailH3 = document.querySelector('.restaurant')
 
+                detailImg.src = ramenObject.image
+                detailImg.alt = ramenObject.name
 
-ramenMenu.addEventListener('click', function(event) {
-    if (event.target.className === 'detail-image') {
-        function renderRamenDiv(){
-    const ramenDiv = createElement('div')
-    div.dataset.id = ramen.id
-    div.innerHTML = 
-    `<img class="detail-image" src=${ramen.image} alt="Insert Name Here">
-    <h2 class="name">${ramen.name}</h2>
-    <h3 class="restaurant">${ramen.restaurant}</h3>
-    <h3 class="rating">${ramen.rating}</h3>
-    <h3 class="comment">${ramen.comment}</h3>`
-    
-    }
+                detailH2.textContent = ramenObject.name
+                detailH3.textContent = ramenObject.restaurant
+
+                // ramen rating form
+                const ratingInput = document.querySelector('input#rating')
+                const commentTextArea = document.querySelector('textarea#comment')
+
+                ratingForm.dataset.id = ramenObject.id
+                ratingInput.value = ramenObject.rating
+                commentTextArea.value = ramenObject.comment
+                // console.log(ramenObject.comment)
+                // commentTextArea.textContent = ramenObject.comment // <- OK too
+            })
     }
 })
 
-fetch(`http://localhost:3000/ramens/id`)
-    .then(response => response.json())
-    .then(ramens => renderRamenDiv(ramens))
+
+ratingForm.addEventListener('submit', event => {
+    event.preventDefault()
+    // const rating = event.target.rating.value
+    const ratingInput = event.target[0].value
+    // const comment = event.target.comment.value
+    const commentInput = event.target[1].value
+
+    fetch(`http://localhost:3000/ramens/${ratingForm.dataset.id}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rating: ratingInput, comment: commentInput })
+    })
+        .then(res => res.json())
+        .then(updatedRamen => {
+            console.log(updatedRamen)
+        })
+})
+
+
+
+
+renderRamenMenu()
+
